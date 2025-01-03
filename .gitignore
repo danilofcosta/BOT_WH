@@ -1,0 +1,9 @@
+.env
+__pycache__/KEYS.cpython-313.pyc
+__pycache__/main.cpython-313.pyc
+BOT_HW/__pycache__/__init__.cpython-313.pyc
+BOT_HW/__pycache__/MainConfigs.cpython-313.pyc
+BOT_HW/__pycache__/uteis.cpython-313.pyc
+BOT_HW/__pycache__/Welcome.cpython-313.pyc
+SessionsTeste/BOT_TESTE.session
+SessionsTeste/BOT_TESTE.session-journal
