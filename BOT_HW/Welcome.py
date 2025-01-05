@@ -1,7 +1,7 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
 from pyrogram import Client, filters
 from .uteis import enviar_midia, delete_messages,criar_botoes_em_grade
-import random
+import random,json,os
 from KEYS import GROUP_MAIN
 from pyrogram.enums import ParseMode
 
@@ -15,11 +15,15 @@ class WelcomeConfig:
         self.ParseMode=ParseMode.HTML
         # Adiciona comandos e callbacks
         self.app.on_message(filters.command(["start"]))(self.start_command)
-        self.app.on_message(filters.command(["help"]))(self.callback_query)
+        self.app.on_message(filters.command(["help"]))(self.welcome_callback)
+        self.app.on_message(filters.command(["t"]))(self.pegar_texto)        
+        #base de comandos deve receber um dict com o nome do comando e a descrição
+      
 
-        self.app.on_callback_query()(self.callback_query)
+        # self.app.on_callback_query()(self.callback_query)
+        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("helpComandos_") or query.data in ['help','update','start']))(self.welcome_callback)
 
-    async def start_command(self, client, message: Message):
+    async def start_command(self, client, message,comando=False):
         """Executa o comando /start."""
         if message.chat.type.value != "private":
             return
@@ -27,6 +31,8 @@ class WelcomeConfig:
         loading_msg = await message.reply_text("carregando")
 
         try:
+
+
             me = await self.app.get_me()
 
             # Seleciona mídia aleatória do banco de dados
@@ -59,15 +65,21 @@ class WelcomeConfig:
                     ],
                 ]
             )
+            if not comando and not  message.command:
+                if message.photo or  message.video:
+                    # Se for uma imagem com legenda
+                    await message.edit_caption(welcome_text, parse_mode=self.ParseMode, reply_markup=keyboard)
 
-            await delete_messages(client=self.app, msg=loading_msg)
-            await enviar_midia(client, caption=welcome_text, idchat=message.chat.id, documento=file, reply_markup=keyboard)
+            elif  comando or message.command:                
+                await delete_messages(client=self.app, msg=loading_msg)
+                await enviar_midia(client, caption=welcome_text, idchat=message.chat.id, documento=file, reply_markup=keyboard)
 
         except Exception as e:
             await message.reply_text(f"Erro: {e}")
 
-    async def callback_query(self, client=None, callback_query=None,comando=False):
+    async def welcome_callback(self, client=None, callback_query=None,comando=False):
         """Lida com callbacks de botões inline."""
+        listaDeComandos = self.LoadJson()
         try:
             try:           
                 data =callback_query.command[0]
@@ -96,9 +108,9 @@ Se você tiver algum bug ou dúvida sobre como me utilizar, Reporte ao @ ou em n
 Todos os comandos podem ser usados ​​com o seguinte: / !'''
 
                 )
-                keyboard = criar_botoes_em_grade(lista_botoes=['Dominar'],initcallback='helpComandos_')
-                
                 if not comando:
+                    keyboard = criar_botoes_em_grade(listaDeComandos,initcallback='helpComandos_',b_voltar='start')
+
                     if callback_query.message.photo:
                         # Se for uma imagem com legenda
                         await callback_query.message.edit_caption(help_text, parse_mode=self.ParseMode, reply_markup=keyboard)
@@ -106,21 +118,19 @@ Todos os comandos podem ser usados ​​com o seguinte: / !'''
                         # Caso contrário, edita o texto normal
                         await callback_query.message.edit_text(help_text, parse_mode=self.ParseMode, reply_markup=keyboard)
                 elif  comando:
-                     await self.app.send_message(
+                    keyboard = criar_botoes_em_grade(listaDeComandos,initcallback='helpComandos_')                     
+                    await self.app.send_message(
                                 chat_id=callback_query.chat.id,
                                 text=help_text,
                                 parse_mode=ParseMode.HTML,
                                 reply_markup=keyboard,disable_web_page_preview=True
                             )
 
-
-
-
-
-
-
             elif data == "update":
                 await callback_query.answer("Funcionalidade de atualização ainda não implementada!", show_alert=True)
+            elif data == 'start':
+                await delete_messages(client=self.app, msg=callback_query.message)
+                await self.start_command(client=self.app, message=callback_query.message,comando=True)#IMITA O COMANDO /start
 
             else:
                 await callback_query.answer("Opção desconhecida!", show_alert=True)
@@ -133,27 +143,25 @@ Todos os comandos podem ser usados ​​com o seguinte: / !'''
             _, comando = callback.data.split('_')
 
             # Definindo o glossário de comandos
-            COMANDOS_glossário = {
-                'dominar': 'Comandos do usuário :\n- /dominar : <code><Nome|sobrenome|nome completo do personagem na imagem></code>.\nComando público, use em grupo.\nCaso o nome esteja correto, será exibida uma mensagem de confirmação.'
-            }
+            listaDeComandos = self.LoadJson()
 
             # Verificar se o comando existe no glossário
-            if comando in COMANDOS_glossário:
-                txt = f"<b>{comando.title()}</b>\n{COMANDOS_glossário[comando]}"
+            if comando in listaDeComandos:
+                txt = f"{listaDeComandos[comando]['texto'].replace('=',self.genero[0].lower())}"
             else:
-                txt = "<b>Comando não encontrado</b>"
+                txt = "<b>Descrição Não Definida </b>"
 
             try:
                 # Criar o teclado com um botão "voltar"
-                keyboard = criar_botoes_em_grade(lista_botoes=['voltar'], callback='help')
+                keyboard = criar_botoes_em_grade(['voltar'], callback='help')
 
                 # Editar a legenda ou o texto da mensagem com o glossário
                 if callback.message.photo:
                     # Se for uma imagem com legenda
-                    await callback.message.edit_caption(txt, parse_mode=self.ParseMode, reply_markup=keyboard)
+                    await callback.message.edit_caption(txt, parse_mode=self.ParseMode, reply_markup=keyboard,caption_entities =self.GerarListaEntidades(listaDeComandos[comando]['entidades']))
                 else:
                     # Caso contrário, edita o texto normal
-                    await callback.message.edit_text(txt, parse_mode=self.ParseMode, reply_markup=keyboard)
+                    await callback.message.edit_text(txt, parse_mode=self.ParseMode, reply_markup=keyboard,entities =self.GerarListaEntidades(listaDeComandos[comando]['entidades']))   
 
             except Exception as e:
                 # Caso ocorra erro ao editar a mensagem
@@ -161,5 +169,72 @@ Todos os comandos podem ser usados ​​com o seguinte: / !'''
                 await callback.message.reply_text("Ocorreu um erro ao tentar processar seu comando.", parse_mode=self.ParseMode)
 
 
+    async def pegar_texto(self, client, message):
+   
+        """Executa o comando /t."""
+        
+        # Verifica se a mensagem é uma resposta
+        if not message.reply_to_message:
+            await message.reply_text("Este comando deve ser usado em resposta a uma mensagem.")
+            return
+
+        # Verifica se a mensagem é um texto 
+        texto = message.reply_to_message.text
+        entidades = message.reply_to_message.entities
+        DistEntidades = []
+        if entidades:
+            for num,i in enumerate(entidades):
+                DistEntidades.append({'length':i.length,'offset':i.offset,
+                    'type' :i.type.name})
+
+        entidades
+        msg={
+            'texto':texto,
+            'entidades':DistEntidades
+        }
+        
+        try:
+            arquivo_json = os.path.join("BOT_HW", "comandos.json")
+            if os.path.exists(arquivo_json):
+                with open(arquivo_json, 'r') as f:
+                    arquivo=json.load(f) 
+            else:
+                arquivo={}
+            arquivo[message.command[-1].strip()] = msg
+            with open(arquivo_json, 'w') as f:
+                json.dump(arquivo, f, indent=4)
+            await message.reply_text("Texto salvo com sucesso!")
+        except Exception as e:
+            print(f"Erro ao salvar no arquivo: {e}")
+
+        
 
 
+    def LoadJson(self, arquivo_json=os.path.join("BOT_HW", "comandos.json")):
+        
+        try:
+            with open(arquivo_json, 'r',encoding='UTF-8') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
+        except Exception as e:
+            print(f"Erro ao carregar o arquivo JSON: {e}")
+            return {}
+        
+    def GerarListaEntidades(self, entidades):
+        ListaEntidades = []
+        if  entidades == None:
+            return ListaEntidades
+        from pyrogram.types import MessageEntity
+        from pyrogram.enums import MessageEntityType
+        for i in entidades:
+            # Acessa o tipo da entidade diretamente pela chave do tipo (como 'SPOILER', 'BOLD', etc.)
+            tipo_entidade = MessageEntityType[i['type']]
+            
+            # Cria a entidade com o tipo, offset e length
+            entidade = MessageEntity(type=tipo_entidade, offset=i['offset'], length=i['length'])
+            
+            # Adiciona a entidade à lista
+            ListaEntidades.append(entidade)
+        
+        return ListaEntidades
