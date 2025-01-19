@@ -24,8 +24,213 @@
             }
         ]
     },
+    "top": {
+        "texto": "Comando user  :\n [/top | /=top ]\n\nRetorna um raking das Waifus|hubandos coletados,tamb\u00e9m retorna um dos membros presentes no grupo caso seja solicitado .\n\n\ncomando /top apenas em pv",
+        "entidades": [
+            {
+                "length": 15,
+                "offset": 0,
+                "type": "UNDERLINE"
+            },
+            {
+                "length": 14,
+                "offset": 0,
+                "type": "BOLD"
+            },
+            {
+                "length": 1,
+                "offset": 17,
+                "type": "CODE"
+            },
+            {
+                "length": 4,
+                "offset": 18,
+                "type": "BOT_COMMAND"
+            },
+            {
+                "length": 1,
+                "offset": 31,
+                "type": "CODE"
+            },
+            {
+                "length": 8,
+                "offset": 156,
+                "type": "ITALIC"
+            },
+            {
+                "length": 4,
+                "offset": 164,
+                "type": "BOT_COMMAND"
+            },
+            {
+                "length": 4,
+                "offset": 164,
+                "type": "ITALIC"
+            },
+            {
+                "length": 13,
+                "offset": 168,
+                "type": "ITALIC"
+            }
+        ]
+    },
+    "fav": {
+        "texto": "Comando user  :\n [/=fav ]\nEscolhe seu personagem favorito por padr\u00e3o \u00e9 definido o primeiro que vc capturou usando /dominar nome do personagem ,mais como  alterar?\n\n-Alterando favorito:\nUse o comando com o id presente em seu harem /harem=\n\nExemplo:\n/fav 0",
+        "entidades": [
+            {
+                "length": 15,
+                "offset": 0,
+                "type": "UNDERLINE"
+            },
+            {
+                "length": 14,
+                "offset": 0,
+                "type": "BOLD"
+            },
+            {
+                "length": 1,
+                "offset": 17,
+                "type": "CODE"
+            },
+            {
+                "length": 1,
+                "offset": 24,
+                "type": "CODE"
+            },
+            {
+                "length": 8,
+                "offset": 114,
+                "type": "BOT_COMMAND"
+            },
+            {
+                "length": 6,
+                "offset": 230,
+                "type": "BOT_COMMAND"
+            },
+            {
+                "length": 8,
+                "offset": 239,
+                "type": "ITALIC"
+            },
+            {
+                "length": 4,
+                "offset": 248,
+                "type": "BOT_COMMAND"
+            }
+        ]
+    },
+    "gift": {
+        "texto": "Comando:\n[/gift | /=girt]\n\nDescri\u00e7\u00e3o:\nPermite presentear algu\u00e9m com um personagem \ud83c\udf81.\n\nComo usar:\n\nPara responder diretamente \u00e0 pessoa que ser\u00e1 presenteada, utilize:\n/=girt [ID do personagem]\n\nExemplo: /=girt 55 ",
+        "entidades": [
+            {
+                "length": 7,
+                "offset": 0,
+                "type": "ITALIC"
+            },
+            {
+                "length": 16,
+                "offset": 9,
+                "type": "CODE"
+            },
+            {
+                "length": 18,
+                "offset": 193,
+                "type": "ITALIC"
+            }
+        ]
+    },
+    "trade": {
+        "texto": "Comando:\n[/trade |/=trade]\n\nDescri\u00c3\u00a7\u00c3\u00a3o:\nPermite negociar personagens com outros usu\u00c3\u00a1rios. \u00f0\u0178\u201d\u201e\n\nComo usar:\n\nResponda \u00c3\u00a0 mensagem do usu\u00c3\u00a1rio com quem deseja negociar e utilize:\n/trade [ID do seu personagem] [ID do personagem do outro usu\u00c3\u00a1rio]\n\nExemplo:\n/trade 123 456\n\nCertifique-se de que ambos possuem os personagens informados para concluir a troca.",
+        "entidades": [
+            {
+                "length": 8,
+                "offset": 0,
+                "type": "ITALIC"
+            },
+            {
+                "length": 7,
+                "offset": 10,
+                "type": "CODE"
+            },
+            {
+                "length": 21,
+                "offset": 88,
+                "type": "ITALIC"
+            },
+            {
+                "length": 52,
+                "offset": 152,
+                "type": "CODE"
+            },
+            {
+                "length": 19,
+                "offset": 212,
+                "type": "CODE"
+            }
+        ]
+    },
+    "animeList": {
+        "texto": "Comando:\n[/animeList | /=animeList]\n\nDescri\u00e7\u00e3o:\nLista os animes no banco de dados por nome\n\nComo usar:\nuse o comando no privado ou em um grupo\n\nExemplo: /animeList",
+        "entidades": [
+            {
+                "length": 7,
+                "offset": 0,
+                "type": "ITALIC"
+            },
+            {
+                "length": 26,
+                "offset": 9,
+                "type": "CODE"
+            },
+            {
+                "length": 9,
+                "offset": 144,
+                "type": "ITALIC"
+            },
+            {
+                "length": 9,
+                "offset": 154,
+                "type": "CODE"
+            }
+        ]
+    },
+    "pesquisar": {
+        "texto": "\ud83d\udd0e A pesquisa est\u00e1 dispon\u00edvel por inline no Telegram!\n\nCom o recurso inline, voc\u00ea pode buscar informa\u00e7\u00f5es diretamente na conversa sem precisar sair do aplicativo.\n\n\ud83d\udccc Como funciona?\n\nAbra qualquer chat no Telegram.\n\nDigite o nome do bot seguido de uma palavra-chave ou tema, como:\n\n@Nome_do_bot mikasa.\n\nnO bot retorna os resultados diretamente no chat, e voc\u00ea pode escolher o que deseja enviar.\n\n\u2728 Exemplo pr\u00e1tico:\nSe o bot permitir buscas na internet, voc\u00ea pode digitar:\n@Wadomination_bot Mikasa\n\n\ud83d\udca1 Depois, basta tocar no resultado desejado para compartilhar na conversa. R\u00e1pido, f\u00e1cil e eficiente!",
+        "entidades": [
+            {
+                "length": 50,
+                "offset": 3,
+                "type": "BOLD"
+            },
+            {
+                "length": 14,
+                "offset": 166,
+                "type": "BOLD"
+            },
+            {
+                "length": 17,
+                "offset": 467,
+                "type": "MENTION"
+            },
+            {
+                "length": 17,
+                "offset": 467,
+                "type": "ITALIC"
+            },
+            {
+                "length": 7,
+                "offset": 484,
+                "type": "ITALIC"
+            },
+            {
+                "length": 100,
+                "offset": 495,
+                "type": "CODE"
+            }
+        ]
+    },
     "harem": {
-        "texto": "Harem\n\nComando user  :\n [/harem | /harem=|/myharem= | /w= ]\ncomando retorna o harem do usu\u00e1rio\n\ncomando /harem apenas em pv",
+        "texto": "Harem\n\nComando user  :\n [/harem | /haremw|/myharemw | /ww ]\ncomando retorna o harem do usu\u00e1rio\n\nRecebeu um presente \u00e9 n\u00e3o gostou?\nuse /del | /=del [ID do personagem] \n\nisso ira remove-lo do seu harem \n\ncomando /harem apenas em pv",
         "entidades": [
             {
                 "length": 5,
@@ -53,17 +258,17 @@
                 "type": "BOT_COMMAND"
             },
             {
-                "length": 6,
+                "length": 7,
                 "offset": 34,
                 "type": "BOT_COMMAND"
             },
             {
-                "length": 8,
+                "length": 9,
                 "offset": 42,
                 "type": "BOT_COMMAND"
             },
             {
-                "length": 2,
+                "length": 3,
                 "offset": 54,
                 "type": "BOT_COMMAND"
             },
@@ -73,23 +278,28 @@
                 "type": "CODE"
             },
             {
+                "length": 4,
+                "offset": 134,
+                "type": "BOT_COMMAND"
+            },
+            {
                 "length": 8,
-                "offset": 96,
+                "offset": 202,
                 "type": "ITALIC"
             },
             {
                 "length": 6,
-                "offset": 104,
+                "offset": 210,
                 "type": "BOT_COMMAND"
             },
             {
                 "length": 6,
-                "offset": 104,
+                "offset": 210,
                 "type": "ITALIC"
             },
             {
                 "length": 13,
-                "offset": 110,
+                "offset": 216,
                 "type": "ITALIC"
             }
         ]

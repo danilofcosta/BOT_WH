@@ -2,8 +2,9 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import *
 from pyrogram import types,filters
 from BOT_HW import ART_BOT,HAREM
-from .uteis import enviar_midia
+from .uteis import enviar_midia,createBoteosvf
 from cachetools import TTLCache
+
 
 cache = TTLCache(maxsize=1000, ttl=300)
 
@@ -16,11 +17,14 @@ class haremConfig:
         self.ParseMode=ParseMode.HTML
         
         self.app.on_message(filters.command(["harem",f'{self.genero[0]}h',f'myharem{self.genero[0]}',f'harem{self.genero[0]}']))(self.startHarem)
-        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("pH_") or query.data.startswith("apagarharem_")))(self.harem_callback)
+        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("pH_") or query.data.startswith("apagarharem_") or query.data.startswith("apagarharem_")))(self.harem_callback)
+        self.app.on_message(filters.command(["del",f'{self.genero[0]}del']))(self.apagar_idPersogem)
+        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("clear") or query.data.startswith("noclear") ))(self.callback_clear)
 
 
     async def startHarem(self, client, message):
-        if not message.command[0] in [f"harem"] and  message.chat.type.value != 'private' :
+        if message.command[0] == f'harem' and f'@' not in message.text.lower() and message.chat.type.value != "private":
+
             return 
 
         user_id =  message.from_user.id #ID do usuario
@@ -37,6 +41,9 @@ class haremConfig:
             media = harem[Genero_bot]['Harem']
             modo = media.get('modo_harem')
             ListaDominados = harem[Genero_bot]['DOMINADOS']#lista de ids dominados
+            if len(ListaDominados)== 0:
+                return await message.reply( text='𝔳𝔬𝔠𝔢̂ 𝔫𝔞̃𝔬 𝔱𝔢𝔪 𝔲𝔪 𝔥𝔞𝔯𝔢𝔪', quote=True)
+
             
             #verfica se tem a midia de favorito caso n tenha coloca o ultimo dominado como favorito
             try:
@@ -52,7 +59,6 @@ class haremConfig:
             
             #busca infos da midia ids dominados no DB de inmagens/midias          
             ListaDominadosInfos =  await self.base_data.find({'_id': {'$in': ListaDominados}}).to_list(length=None)
-            
             if 'padrao' in modo:
                 paginas=await self.Haremmodo_padrao(ListaDominados=ListaDominados,ListaDominadosInfos=ListaDominadosInfos)
                 # keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(text='🌐',switch_inline_query_current_chat=f'user.harem.{msg.from_user.id}'),]])
@@ -144,6 +150,43 @@ class haremConfig:
             paginas.append("\n".join(resultado).strip())
 
         return paginas
+
+    async def apagar_idPersogem(self,client,message):
+        if message.command[0] == f'del' and f'@' not in message.text.lower() and message.chat.type.value != "private":return 
+        
+        query = {
+                "_id": message.from_user.id,
+                f"{self.genero}_tk.DOMINADOS": { "$elemMatch": { "$eq": int(message.command[1]) } }
+            }
+
+        # Executar a consulta
+        result = await HAREM.find_one(query)
+        if not result: return
+        fav=await self.base_data.find_one({"_id":int( message.command[1])})
+
+        await enviar_midia(self.app,idchat=message.chat.id,documento=fav,reply_markup=
+        createBoteosvf(f'clear_{message.command[1]}_{message.from_user.id}',f'noclear_{message.command[1]}_{message.from_user.id}'))
+
+    async def callback_clear(self,client,query):
+        c,id,iduser=query.data.split('_')
+        id=int(id)
+        iduser=int(iduser)
+
+        if query.from_user.id != iduser:return
+        if c == "clear":
+            check_harem = await HAREM.find({'_id': iduser}).to_list(length=None)
+            harem = check_harem[0] if check_harem else None
+            if harem:
+                    lista_dominados = harem.get(f"{self._tk.lower()}", {}).get("DOMINADOS", [])
+                    lista_dominados.remove(id)
+                    result =await HAREM.update_one(
+                        {"_id": iduser},
+                        {"$set": {f"{self._tk.lower()}.DOMINADOS": lista_dominados}}
+                    )
+                    await  query.message.reply(f'Que pena !  Id {id} Foi removideo do seu /harem :(')
+        else:
+            await client.delete_messages(query.message.chat.id, query.message.id)
+            return
 
     
     async def harem_callback(self,client, callback_query):

@@ -1,8 +1,11 @@
 from pyrogram.enums import ParseMode
 from datetime import datetime
 
-async def enviar_midia(client, caption, documento=None, tipo_midia=None, idchat=int, midia=None, parse_mode=ParseMode.HTML, reply_markup=None, reply_to_message_id=None):
-    
+async def enviar_midia(client, caption=None, documento=None, tipo_midia=None, idchat=int, midia=None, parse_mode=ParseMode.HTML, reply_markup=None, reply_to_message_id=None):
+    if not caption:
+        from . import Inline
+        caption=await Inline.InlineConfig.CreateCaption(documento=documento)
+        
     if documento:
         # Verifica se as chaves 'tipo', 'url' e 'file_id' existem
         tipo_midia = documento.get('tipo')
@@ -67,7 +70,7 @@ def criar_botoes_em_grade(dict_botoes,initcallback='', callback=None,colunas=3,b
     # Organiza os botões em grupos de 'colunas'
     for i in range(0, len(lista_botoes), colunas):
         linha = [
-            InlineKeyboardButton(nome.lower(), callback_data=initcallback+nome.lower() if not callback else callback)
+            InlineKeyboardButton(nome.title(), callback_data=initcallback+nome.lower() if not callback else callback)
             for nome in lista_botoes[i:i + colunas]
         ]
         botoes.append(linha)
@@ -142,3 +145,22 @@ def to_script_text(text):
         # Converte o texto para estilo manuscrito Unicode
         return ''.join(script_map.get(char, char) for char in text)
 
+def createBoteosvf(callv:str,callf:str):
+     from pyrogram.types import InlineKeyboardMarkup,InlineKeyboardButton
+     keyboard = [
+        [InlineKeyboardButton("❌", callback_data=callf),
+           InlineKeyboardButton ("✅", callback_data=callv)
+            
+        ]
+    ]
+     return InlineKeyboardMarkup(keyboard)
+
+def createBotao_busca_iniline(seach:str,txtbotao='🔎'):
+    from pyrogram.types import InlineKeyboardMarkup,InlineKeyboardButton
+    keyboard = [
+        [InlineKeyboardButton(txtbotao, switch_inline_query_current_chat=seach),
+   
+            
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard) 

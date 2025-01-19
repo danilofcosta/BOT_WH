@@ -18,24 +18,24 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)   # Ignora logs detalhado
 
 async def main(is_teste=False): 
     if not is_teste:
-        # BOT_W = BOT_WH_configs() 
-        # BOT_H = BOT_WH_configs() 
+        BOT_W = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='Waifu',genero='waifu')
+        BOT_H = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='Husbando',genero='husbando')
 
-        # task1 = asyncio.create_task(BOT_W.start_bot())
+        task1 = asyncio.create_task(BOT_W.start_bot())
    
-        # task2 = asyncio.create_task(BOT_H.start_bot())
-        # try:
-        #     await asyncio.gather(task1, task2)
-        # except Exception as e:
-        #     print(f"Erro ao iniciar os bots: {e}")
-        # finally:
-        #     await BOT_W.stopbot()
-        #     await BOT_H.stopbot()
+        task2 = asyncio.create_task(BOT_H.start_bot())
+        try:
+            await asyncio.gather(task1, task2)
+        except Exception as e:
+            print(f"Erro ao iniciar os bots: {e}")
+        finally:
+            await BOT_W.stopbot()
+            await BOT_H.stopbot()
         pass
 
     elif is_teste:
-        #cria uma instancia com o bot de teste predefinido 
-        TESTE = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='BOT_TESTE',genero='husbando',session_dir='SessionsTeste')
+        #cria uma instancia com o bot de teste  
+        TESTE = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='BOT_TESTE',genero='waifu',session_dir='SessionsTeste')
          
         try:
             await asyncio.gather(asyncio.create_task(TESTE.start_bot()))
@@ -49,8 +49,7 @@ async def main(is_teste=False):
 
 if __name__ == "__main__":
     try:
-        os.system('cls')
-        pass
+       os.system('cls' if os.name == 'nt' else 'clear')
     except:
         print('Não é possivel fazer a limpeza da tela')
     asyncio.run(main(is_teste=True))

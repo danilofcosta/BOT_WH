@@ -3,10 +3,11 @@ from pyrogram import Client
 from KEYS import API_HASH,API_ID
 from pyrogram.enums import ParseMode
 from BOT_HW import H_DATA,W_DATA
-from . import Welcome,Inline,Harem,ComandoUser
+from . import Welcome,Inline,Harem,ComandoUser,contador
+
 
 class BOT_WH_configs:
-    def __init__(self,bot_token,NameSession='NameSession',genero='waifu',session_dir='Sessions'):
+    def __init__(self,bot_token:str,NameSession='NameSession',genero='waifu',session_dir='Sessions'):
         self.genero=genero.lower()
         os.makedirs(session_dir, exist_ok=True)
         session_path = os.path.join(session_dir, NameSession)
@@ -24,19 +25,30 @@ class BOT_WH_configs:
         Inline.InlineConfig(self.app,self.genero,base_data)
         Harem.haremConfig(self.app,self.genero,base_data)
         ComandoUser.ComandoUserConfigs(self.app,self.genero,base_data)
+        contador.ContadorConfigs(self.app,self.genero,base_data)
+   
     async def start_bot(self):
+        #Manda um mensagem para o chat do dev mostrando que o bot foi inicializado
         await self.app.start()
         me = await self.app.get_me()
-        print(f"{'-'*50}\n{me.username} está online\n{'-'*50} 1.0")
+        print(f"{'-'*50}\n{me.username} está online\n{'-'*50} ")
         
         try:
             from KEYS import DESENVOLVEDOR
-            await self.app.send_message(
+            import json
+            T='COMANDOS\n'
+            with open('BOT_HW/comandos.json', 'r') as file:
+                data = json.load(file)  # Carrega os dados do JSON
+                for i in data:  # Itera sobre as chaves (ou elementos, se for uma lista)
+                    T += f"/{i}\n"  
+                          
+                await self.app.send_message(
                 chat_id=DESENVOLVEDOR,
-                text=f"{self.genero} \n comando /start /help  .,;/harem, /dominar\n top",
+                text=f"{self.genero} \n{T}",
                 parse_mode=ParseMode.HTML,
                 disable_notification=True
             ) 
+        
 
         except:
             raise ValueError('Não é possivel enviar mensagems com o bot')

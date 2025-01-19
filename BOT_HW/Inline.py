@@ -15,8 +15,9 @@ class InlineConfig:
 
     async def startInlineQuery(self,client, inline_query,switch_pm_text=None,limite=10,user=None):
         offset = int(inline_query.offset) if inline_query.offset else 0
-
+        # print(offset,inline_query.offset)
         if inline_query.query == '':
+
             dadosresult = await self.base_data.find({}).skip(offset).sort('_id', -1).limit(limite).to_list(length=limite)
 
             switch_pm_text='𝕯𝖔𝖒𝖎𝖓𝖆𝖙𝖎𝖔𝖓𝕾'
@@ -28,7 +29,6 @@ class InlineConfig:
                     user = await self.app.get_users(iduser)
                     user=user.mention
                 except Exception as error:
-                    print(error)
                     user =False
                   
 
@@ -44,7 +44,7 @@ class InlineConfig:
                     user=f'<a href=tg://user?id={iduser}>{user}</a>'
                 myharem_waifu = harems[0][self.genero+'_tk']['DOMINADOS']
                 dadosresult = await self.base_data.find({'_id': {'$in': myharem_waifu}}).skip(offset).limit(limite).to_list(length=limite)
-                switch_pm_text=str(len(dadosresult))
+                switch_pm_text=f'{self.genero_txt}: {len(dadosresult)}'
                 
                 
                 
@@ -71,19 +71,23 @@ class InlineConfig:
 
         if dadosresult: 
             results = await self.create_inline_results(dadosresult,user=user)
-            await self.wiews_resuts(inline_query,results,switch_pm_text=switch_pm_text,lim=limite,offset=offset)
+            await self.wiews_resuts(inline_query,results,switch_pm_text=switch_pm_text,offset=offset,lim=limite)
         
 
     async def create_inline_results(self,dadosresult,parsemode=ParseMode.HTML,user=None):
         """Cria resultados inline a partir dos dados recebidos."""
         objects = []
-        for documento in dadosresult:
+        for num,documento in enumerate(dadosresult,start=1):
             tipo = documento.get('tipo')
+            fileid = documento.get('file_id')
             url = documento.get('url')
 
+            
             # Remover as aspas simples para chamar a função corretamente
+            
             caption =await self.CreateCaption(documento,user=user)
-            fileid = documento.get('file_id')
+        
+
             # print(documento.get('_id'))
             if tipo == 'photo':
                 if url:
@@ -115,21 +119,24 @@ class InlineConfig:
                     )
 
                     objects.append(result)
-
+            else:
+                print(f"Tipo de mídia inválido: {tipo}")
+            
         return objects
     
-    async def wiews_resuts(self,inline_query,results,switch_pm_text=None,lim=10,offset=0):
+    async def wiews_resuts(self,inline_query,results,lim:int,offset:int,switch_pm_text:int=None):
         try:
             if not switch_pm_text:
                 switch_pm_text=self.genero_txt
-            next_offset = str(offset + lim) if len(results) == lim else ''
+            next_offset = str(offset + lim) if len(results)==lim else ''
+            
             
             await self.app.answer_inline_query(
                 inline_query.id,
                 results=results,
                 next_offset=next_offset,
                 is_gallery=True,
-                cache_time=6,
+                cache_time=0,
                 switch_pm_text=switch_pm_text,
                 switch_pm_parameter='x'
             )
@@ -139,7 +146,7 @@ class InlineConfig:
     async def CreateCaption(self,documento,user=None):
         
         # Crie a legenda da mídia aqui
-        emojs= await ART_BOT.find_one({"arquivo": "config_geral"}).to_list(length=None)
+        emojs= await ART_BOT.find_one({"arquivo": "config_geral"})
         
         raridades = emojs['EMOJS']['raridade'] # type: ignore
         midia_Eventos = emojs['EMOJS']['eventos']

@@ -28,7 +28,7 @@ class WelcomeConfig:
         if message.chat.type.value != "private":
             return
 
-        loading_msg = await message.reply_text("carregando")
+        loading_msg = await message.reply_text("𝖈𝖆𝖗𝖗𝖊𝖌𝖆𝖓𝖉𝖔...")
 
         try:
 
@@ -184,8 +184,9 @@ Todos os comandos podem ser usados ​​com o seguinte: / !'''
         DistEntidades = []
         if entidades:
             for num,i in enumerate(entidades):
+         
                 DistEntidades.append({'length':i.length,'offset':i.offset,
-                    'type' :i.type.name})
+                    'type' :i.type.name,'custom_emoji_id':i.custom_emoji_id,'user':i.user,'url':i.url,'language':i.language})
 
         entidades
         msg={
@@ -232,7 +233,7 @@ Todos os comandos podem ser usados ​​com o seguinte: / !'''
             tipo_entidade = MessageEntityType[i['type']]
             
             # Cria a entidade com o tipo, offset e length
-            entidade = MessageEntity(type=tipo_entidade, offset=i['offset'], length=i['length'])
+            entidade = MessageEntity(type=tipo_entidade, offset=i['offset'], length=i['length'],custom_emoji_id=i.get('custom_emoji_id',None),user=i.get('user',None),language=i.get('language',None),url=i.get('url',None))
             
             # Adiciona a entidade à lista
             ListaEntidades.append(entidade)
