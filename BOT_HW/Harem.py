@@ -19,7 +19,7 @@ class haremConfig:
         self.app.on_message(filters.command(["harem",f'{self.genero[0]}h',f'myharem{self.genero[0]}',f'harem{self.genero[0]}']))(self.startHarem)
         self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("pH_") or query.data.startswith("apagarharem_") or query.data.startswith("apagarharem_")))(self.harem_callback)
         self.app.on_message(filters.command(["del",f'{self.genero[0]}del']))(self.apagar_idPersogem)
-        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("clear") or query.data.startswith("noclear") ))(self.callback_clear)
+        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("okclear") or query.data.startswith("oknoclear") ))(self.callback_clear)
 
 
     async def startHarem(self, client, message):
@@ -153,7 +153,8 @@ class haremConfig:
 
     async def apagar_idPersogem(self,client,message):
         if message.command[0] == f'del' and f'@' not in message.text.lower() and message.chat.type.value != "private":return 
-        
+        if len(message.command)==1:
+            return await message.reply('Qual id do Presonagem que deseja remover do seu harem \n\n /help',quote=True)
         query = {
                 "_id": message.from_user.id,
                 f"{self.genero}_tk.DOMINADOS": { "$elemMatch": { "$eq": int(message.command[1]) } }
@@ -165,7 +166,7 @@ class haremConfig:
         fav=await self.base_data.find_one({"_id":int( message.command[1])})
 
         await enviar_midia(self.app,idchat=message.chat.id,documento=fav,reply_markup=
-        createBoteosvf(f'clear_{message.command[1]}_{message.from_user.id}',f'noclear_{message.command[1]}_{message.from_user.id}'))
+        createBoteosvf(f'okclear_{message.command[1]}_{message.from_user.id}',f'oknoclear_{message.command[1]}_{message.from_user.id}'))
 
     async def callback_clear(self,client,query):
         c,id,iduser=query.data.split('_')
@@ -173,7 +174,7 @@ class haremConfig:
         iduser=int(iduser)
 
         if query.from_user.id != iduser:return
-        if c == "clear":
+        if c == "okclear":
             check_harem = await HAREM.find({'_id': iduser}).to_list(length=None)
             harem = check_harem[0] if check_harem else None
             if harem:
@@ -236,3 +237,42 @@ class haremConfig:
         
         except Exception as e:
             await callback_query.answer(f"Ultima pagina")
+
+    async def CreateCaption(self,documento,user=None):
+        
+        # Crie a legenda da mídia aqui
+        emojs= await ART_BOT.find_one({"arquivo": "config_geral"})
+        
+        raridades = emojs['EMOJS']['raridade'] # type: ignore
+        midia_Eventos = emojs['EMOJS']['eventos']
+
+        #infos do aquivo
+        nome = documento['nome']
+        evento = documento.get('evento')
+        fonte=documento['anime']
+        ID=documento['_id']
+        raridade=documento['raridade']
+        #********************
+        if evento != '0':#caso  tiver um evento definido
+            evento_dados = midia_Eventos.get(evento)
+            emoj = evento_dados['emoji']
+            evento_emoji = f'[{emoj}]'
+            Nome_evemto=evento_dados["nome"].replace("_", " ").title()
+            Nome_evemto=uteis.to_script_text(Nome_evemto)
+            
+            EVENTO = f'\n\n{emoj} <b> {Nome_evemto}</b>  {emoj}'
+        else:
+            EVENTO = evento_emoji=''
+                
+        emojRaridade = raridades[raridade]['emoji'] # type: ignore
+        nomeRaridade = raridades[raridade]['nome']
+
+        cabeçario= f"<b>Wow! Olha só ess{'e'if self.genero == 'husbando'else 'a'} {self.genero}!</b>\n\n" if not user else f"<b>Wow! Olha só ess{'e'if self.genero == 'husbando'else 'a'} {self.genero} de </b> {user}\n\n "
+        
+        caption = (   f"{cabeçario}"
+        f"<b>{fonte.title()}</b>\n"
+        f"<b>{ID}</b> : <b>{nome.title()}</b> {evento_emoji}\n"
+        f"{emojRaridade} :  <b>{nomeRaridade.title()}</strong> {EVENTO}</b>"
+        )    
+        return caption
+    

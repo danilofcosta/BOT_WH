@@ -3,7 +3,7 @@ from pyrogram import Client
 from KEYS import API_HASH,API_ID
 from pyrogram.enums import ParseMode
 from BOT_HW import H_DATA,W_DATA
-from . import Welcome,Inline,Harem,ComandoUser,contador
+from . import Welcome,Inline,Harem,ComandoUser,contador,eventos
 
 
 class BOT_WH_configs:
@@ -26,6 +26,8 @@ class BOT_WH_configs:
         Harem.haremConfig(self.app,self.genero,base_data)
         ComandoUser.ComandoUserConfigs(self.app,self.genero,base_data)
         contador.ContadorConfigs(self.app,self.genero,base_data)
+        eventos.GerenciarEventos(self.app,self.genero,base_data)
+
    
     async def start_bot(self):
         #Manda um mensagem para o chat do dev mostrando que o bot foi inicializado

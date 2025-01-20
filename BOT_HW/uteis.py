@@ -4,7 +4,8 @@ from datetime import datetime
 async def enviar_midia(client, caption=None, documento=None, tipo_midia=None, idchat=int, midia=None, parse_mode=ParseMode.HTML, reply_markup=None, reply_to_message_id=None):
     if not caption:
         from . import Inline
-        caption=await Inline.InlineConfig.CreateCaption(documento=documento)
+        inline_config = Inline.InlineConfig()
+        caption = await inline_config.CreateCaption(documento=documento)
         
     if documento:
         # Verifica se as chaves 'tipo', 'url' e 'file_id' existem
@@ -164,3 +165,6 @@ def createBotao_busca_iniline(seach:str,txtbotao='🔎'):
         ]
     ]
     return InlineKeyboardMarkup(keyboard) 
+
+
+

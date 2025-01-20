@@ -71,14 +71,17 @@ class ComandoDominar(ComandoUserConfigs):
 
         dt.pop(0)  # Remove o comando da lista
         if not self._validar_nome_personagem(info_personagem['nome'], dt):
-            await self._responder_mensagem(
+            msg=await self._responder_mensagem(
                 message, "ɴᴏᴍᴇ ɪɴᴄᴏʀʀᴇᴛᴏ, ᴛᴇɴᴛᴇ ɴᴏᴠᴀᴍᴇɴᴛᴇ", client, deletar_apos=20
             )
+            asyncio.sleep(30)
+            await uteis.delete_messages(self.app,msg=msg,ids=msg.id)
             return
 
         if await self.coletar(message, info_personagem):
             caption = await self.create_txt_coletatrue(message, All_infos)
-            await client.send_message(chat_id=message.chat.id, text=caption, parse_mode=self.ParseMode)
+            #envia mensagem de confirmação 
+            await client.send_message(chat_id=message.chat.id, text=caption, parse_mode=self.ParseMode,reply_markup=InlineKeyboardMarkup([InlineKeyboardButton('🌐', switch_inline_query_current_chat=f'user.harem.{message.from_user.id}')]))
             txt = (
                 f"Usuário: @{message.from_user.username or 'Desconhecido'} | "
                 f"Comando: [{message.text or 'Nenhum'}] | "
@@ -240,47 +243,56 @@ class ComandoTop(ComandoUserConfigs):
             num = 1
             cap = [f'\tᴛᴏᴘ {query.message.chat.title}', f'{"_" * 20}']
             ranking_total = self.rk[str(query.message.chat.id)]['RankingTotal']
-            valores_adicionados = set()  # Conjunto para evitar duplicados.
+            
+            raking ={}
 
+            menbros=[]
             async for membro in client.get_chat_members(query.message.chat.id):
-                if membro.user.id in ranking_total:
-                    dados_usuario = ranking_total[membro.user.id]
-                    
-                    # Adiciona ao ranking apenas se não for duplicado.
-                    if dados_usuario["total"] not in valores_adicionados:
-                        valores_adicionados.add(dados_usuario["total"])
-                        cap.append(
-                            f'{num}° - <a href=tg://user?id={membro.user.id}>{dados_usuario["nome"]}</a> - <code>{dados_usuario["total"]}</code>'
+                menbros.append(membro.user.id)
+            for i in ranking_total:
+                if i in menbros:
+                    cap.append( f'{num}° - <a href=tg://user?id={i}>{ranking_total[i]["nome"]}</a> - <code>{ranking_total[i]["total"]}</code>')
+                    raking[i] = {'nome': f'<a href=tg://user?id={i}>' ,"posicao": num, "total": ranking_total[i]["total"]}
+                    num+=1
+                    if num == 10:                  
+                        if cap:
+                            cap.append(f'{"_" * 20}')
+                            cap = "\n".join(cap)
+
+                        keyboard = InlineKeyboardMarkup(
+                            [
+                                [InlineKeyboardButton("𝖊𝖚", callback_data=f"topchateu_{query.from_user.id}")],
+                                [InlineKeyboardButton("🗑", callback_data="clear_msg" if query.message.chat.type.value != "private" else "nopp")],
+                            ]
                         )
-                        num += 1
 
-                # Para após o Top 10.
-                if num > 10:
-                    self.rk[str(query.message.chat.id)]['posiçao_user'] = num
-                    break
+                        await query.message.edit_text(cap, parse_mode=self.ParseMode, reply_markup=keyboard)
+                       
+            if num<10:
+                        if cap:
+                            cap.append(f'{"_" * 20}')
+                            cap = "\n".join(cap)
 
-            if isinstance(cap, list):
-                cap.append(f'{"_" * 20}')
-                cap = "\n".join(cap)
+                        keyboard = InlineKeyboardMarkup(
+                            [
+                                [InlineKeyboardButton("𝖊𝖚", callback_data=f"topchateu_{query.from_user.id}")],
+                                [InlineKeyboardButton("🗑", callback_data="clear_msg" if query.message.chat.type.value != "private" else "nopp")],
+                            ]
+                        )
 
-            keyboard = InlineKeyboardMarkup(
-                [
-                    [InlineKeyboardButton("𝖊𝖚", callback_data=f"topchateu_{query.from_user.id}")],
-                    [InlineKeyboardButton("🗑", callback_data="clear_msg" if query.message.chat.type.value != "private" else "nopp")],
-                ]
-            )
+                        await query.message.edit_text(cap, parse_mode=self.ParseMode, reply_markup=keyboard)
 
-            await query.message.edit_text(cap, parse_mode=self.ParseMode, reply_markup=keyboard)
+            self.rk[str(query.message.chat.id)]['chatTotal']=raking
 
 
-        elif query.data.startswith("topchateu_") and self.rk[str(query.message.chat.id)]:
+        elif query.data.startswith("topchateu_") and self.rk[str(query.message.chat.id)]:            
             if query.message.chat.type.value == "private":
-                return await query.answer("esse comando só funciona em grupos")
+               return await query.answer("esse comando só funciona em grupos")
             
             # Recupera o ranking do cache
-            ranking_total = self.rk[str(query.message.chat.id)]['RankingTotal']
+            ranking_total = self.rk[str(query.message.chat.id)]['chatTotal']
 
-            # Verifica se o usuário está no ranking
+           #  Verifica se o usuário está no ranking
             user_data = ranking_total.get(query.from_user.id)
             if user_data:
                 posicao = user_data["posicao"]
