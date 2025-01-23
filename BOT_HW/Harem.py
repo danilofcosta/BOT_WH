@@ -2,7 +2,7 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import *
 from pyrogram import types,filters
 from BOT_HW import ART_BOT,HAREM
-from .uteis import enviar_midia,createBoteosvf
+from .uteis import enviar_midia,createBoteosvf,to_script_text
 from cachetools import TTLCache
 
 
@@ -258,7 +258,7 @@ class haremConfig:
             emoj = evento_dados['emoji']
             evento_emoji = f'[{emoj}]'
             Nome_evemto=evento_dados["nome"].replace("_", " ").title()
-            Nome_evemto=uteis.to_script_text(Nome_evemto)
+            Nome_evemto=to_script_text(Nome_evemto)
             
             EVENTO = f'\n\n{emoj} <b> {Nome_evemto}</b>  {emoj}'
         else:

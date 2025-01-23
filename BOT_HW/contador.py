@@ -35,7 +35,7 @@ class ContadorConfigs():
         # Incrementa o contador
         new_count = document['count'] + 1
         await CONTADOR.update_one({"group_id": group_id}, {"$set": {'count': new_count}})
-
+        print(new_count, group_id,group_name)
         # Gerenciamento de locks baseado no gênero do bot
         lock = self.husbando_lock if self.genero.startswith('h') else self.waifu_lock
         
@@ -46,10 +46,11 @@ class ContadorConfigs():
         """Gerencia o drop e a remoção de personagens."""
         drop_key = f"Drop_{self._tk}_chat"
         doprar_personagem_CONT = 100
-        
+      
         # Drop de personagem
         if new_count % doprar_personagem_CONT == 0 and not document.get(drop_key):
             result = await self.drop_character(group_id)
+            
             
             if result:
                 message_id, personagem,date = result

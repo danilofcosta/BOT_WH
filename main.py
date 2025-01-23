@@ -18,8 +18,8 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)   # Ignora logs detalhado
 
 async def main(is_teste=False): 
     if not is_teste:
-        BOT_W = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='Waifu',genero='waifu')
-        BOT_H = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='Husbando',genero='husbando')
+        BOT_W = BOT_WH_configs(bot_token=WAIFU_TK,NameSession='Waifu',genero='waifu')
+        BOT_H = BOT_WH_configs(bot_token=HUSBANDO_TK,NameSession='Husbando',genero='husbando')
 
         task1 = asyncio.create_task(BOT_W.start_bot())
    
@@ -52,5 +52,5 @@ if __name__ == "__main__":
        os.system('cls' if os.name == 'nt' else 'clear')
     except:
         print('Não é possivel fazer a limpeza da tela')
-    asyncio.run(main(is_teste=True))
+    asyncio.run(main(is_teste=False))
     
