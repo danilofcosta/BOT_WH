@@ -65,7 +65,7 @@ class ContadorConfigs():
         elif new_count % doprar_personagem_CONT == 20 and document.get(drop_key):
             await self.remove_character( group_id, document, drop_key)
         
-        elif new_count >= 200:
+        elif new_count >= 130:
             await CONTADOR.update_one(
                 {"group_id": group_id},
                 {
