@@ -59,15 +59,22 @@ class ContadorConfigs():
                     "$push": {f'Drops_chat_{self._tk}': personagem['_id']}
                 })
 
+
+
         # Remoção de personagem
         elif new_count % doprar_personagem_CONT == 20 and document.get(drop_key):
             await self.remove_character( group_id, document, drop_key)
         
         elif new_count >= 200:
-          await CONTADOR.update_one({"group_id": group_id}, {
-                "$set": {drop_key: None}
-            })
-            
+            await CONTADOR.update_one(
+                {"group_id": group_id},
+                {
+                    "$set": {
+                        drop_key: None,
+                        "count": 0
+                    }
+                }
+            )
 
     async def drop_character(self,chat_id):
         """Realiza o drop de um personagem."""     
