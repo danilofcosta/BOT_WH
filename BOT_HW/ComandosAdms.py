@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from pyrogram.enums import ParseMode
-from pyrogram import filters
+from pyrogram import filters,errors
 
 class ComandoAdmin_DevConfigs:
     def __init__(self, app, genero: str, base_data: Dict[str, Any]):
@@ -15,13 +15,19 @@ class ComandoAdmin_DevConfigs:
         #classs
 
     async def check_isadmin(self,client, message):
+        from KEYS import DESENVOLVEDOR
         # Verificar se quem enviou o comando é admin
-     
+        if message.from_user.username == DESENVOLVEDOR.replace('@',''):
+            return True
                 # Obter informações do membro do grupo
-        member = await self.app.get_chat_member(message.chat.id,  message.from_user.id)
-        
+        if message.chat.type.value == "private": return False
+        try:
+            member = await self.app.get_chat_member(message.chat.id,  message.from_user.id)
+        except errors.exceptions.bad_request_400.ChatAdminRequired:
+            await message.reply('preciso ser adm para fazer isso :(',quote=True)
+
         # Verificar se o status é "administrator" ou "creator"
-        if member.status.value in ("administrator", "creator",'owner') and message.chat.type.value != "private":
+        if member.status.value in ("administrator", "creator",'owner'):
             return True
         return False
     
