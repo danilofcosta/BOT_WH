@@ -3,7 +3,7 @@ from pyrogram import Client
 from KEYS import API_HASH,API_ID
 from pyrogram.enums import ParseMode
 from BOT_HW import H_DATA,W_DATA
-from . import Welcome,Inline,Harem,ComandoUser,contador,eventos
+from . import Welcome,Inline,Harem,ComandoUser,contador,eventos,ComandosAdms
 
 
 class BOT_WH_configs:
@@ -24,9 +24,11 @@ class BOT_WH_configs:
         Welcome.WelcomeConfig(self.app,self.genero,base_data)
         Inline.InlineConfig(self.app,self.genero,base_data)
         Harem.haremConfig(self.app,self.genero,base_data)
+        ComandosAdms.ComandoAdmin_DevConfigs(self.app,self.genero,base_data)
         ComandoUser.ComandoUserConfigs(self.app,self.genero,base_data)
-        contador.ContadorConfigs(self.app,self.genero,base_data)
+        #deve ser os ultimos
         eventos.GerenciarEventos(self.app,self.genero,base_data)
+        contador.ContadorConfigs(self.app,self.genero,base_data)
 
    
     async def start_bot(self):

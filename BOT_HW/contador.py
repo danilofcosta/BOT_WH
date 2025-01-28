@@ -35,6 +35,7 @@ class ContadorConfigs():
         # Incrementa o contador
         new_count = document['count'] + 1
         await CONTADOR.update_one({"group_id": group_id}, {"$set": {'count': new_count}})
+        
         print(new_count, group_id,group_name)
         # Gerenciamento de locks baseado no gênero do bot
         lock = self.husbando_lock if self.genero.startswith('h') else self.waifu_lock
@@ -45,7 +46,7 @@ class ContadorConfigs():
     async def handle_character_drop(self,document, new_count, group_id):
         """Gerencia o drop e a remoção de personagens."""
         drop_key = f"Drop_{self._tk}_chat"
-        doprar_personagem_CONT = 100
+        doprar_personagem_CONT = 100 
       
         # Drop de personagem
         if new_count % doprar_personagem_CONT == 0 and not document.get(drop_key):
@@ -100,32 +101,59 @@ class ContadorConfigs():
 
         tipo = "Uma waifu" if self.genero == "WAIFU_TK" else "Um husbando"
         return f"{emoji} <b>{tipo} Apareceu!</b>\nAdicione-o ao seu harem!\n/dominar <code>nome</code>"
-    
+
     async def remove_character(self, group_id, document, drop_key):
         """Remove um personagem do chat."""
+
+        # Validar se a chave existe
+        if drop_key not in document:
+            print("Erro ao remover personagem: Chave não encontrada.")
+            return
+
         try:
             obj = document[drop_key]
-            personagem = document[drop_key][1]
-            await self.app.delete_messages(int(group_id), int(obj[0]))
-            texto_html = (
-                f"<code>{personagem['nome']}</code> de <b>{personagem['anime']}</b> fugiu, "
-                "lembre-se do nome para dominar ele na próxima vez."
+            personagem = obj[1]
+
+            # Atualizar o banco de dados
+            await CONTADOR.update_one(
+                {"group_id": group_id},
+                {
+                    "$set": {drop_key: None},
+                    "$pull": {f'Drops_chat_{self._tk}': personagem['_id']}
+                }
             )
-            teclado = InlineKeyboardMarkup(
-        [InlineKeyboardButton("𝑴𝒂𝒊𝒔 𝒅𝒆𝒕𝒂𝒍𝒉𝒆𝒔", switch_inline_query_current_chat=f"{personagem['_id']}")])
-            msg=await self.app.send_message(group_id, texto_html, parse_mode=self.ParseMode, reply_markup=teclado)
 
-            asyncio.sleep(20)
-            await uteis.delete_messages(self.app,msg=msg,ids=msg.id)
+            try:
+                # Apagar mensagem original
+                await self.app.delete_messages(int(group_id), int(obj[0]))
 
-            await CONTADOR.update_one({"group_id": group_id}, {
-                "$set": {drop_key: None},
-                "$pull": {f'Drops_chat_{self._tk}': personagem['_id']}
-            })
-        except KeyError:
-            print("Erro ao remover personagem: Chave não encontrada.")
+                # Enviar mensagem de feedback
+                texto_html = (
+                    f"<code>{personagem['nome']}</code> de <b>{personagem['anime']}</b> fugiu, "
+                    "lembre-se do nome para dominar ele na próxima vez."
+                )
+                teclado = InlineKeyboardMarkup(
+                    [[  
+                        InlineKeyboardButton(
+                            "𝑴𝒂𝒊𝒔 𝒅𝒆𝒕𝒂𝒍𝒉𝒆𝒔", 
+                            switch_inline_query_current_chat=str(personagem['_id'])
+                        )
+                    ]]
+                )
+                msg = await self.app.send_message(
+                    group_id, texto_html, parse_mode=self.ParseMode, reply_markup=teclado
+                )
+
+                # Aguardar antes de remover mensagem de feedback
+                await asyncio.sleep(20)
+                await uteis.delete_messages(self.app, msg=msg, ids=msg.id)
+
+            except Exception as e:
+                print(f"Erro ao enviar ou deletar mensagens: {e}")
+
         except Exception as e:
             print(f"Erro ao remover personagem: {e}")
+
 
     async def initialize_or_get_group_document(self,group_id, group_name):
             """Inicializa ou recupera o documento do grupo no banco de dados."""
