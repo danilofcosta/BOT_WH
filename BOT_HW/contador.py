@@ -36,7 +36,7 @@ class ContadorConfigs():
         new_count = document['count'] + 1
         await CONTADOR.update_one({"group_id": group_id}, {"$set": {'count': new_count}})
         
-        print(new_count, group_id,group_name)
+        # print(new_count, group_id,group_name)
         # Gerenciamento de locks baseado no gênero do bot
         lock = self.husbando_lock if self.genero.startswith('h') else self.waifu_lock
         
