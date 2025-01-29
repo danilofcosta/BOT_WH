@@ -25,6 +25,10 @@ class GerenciarEventos:
         for new_member in message.new_chat_members:
         
             if new_member.is_bot:
+                bot_info = await self.app.get_me()
+                meu_bot_id = bot_info.id
+                if new_member.id != meu_bot_id:
+                    return
                 chat_info = await client.get_chat(message.chat.id)
                 group_name = chat_info.title
                 num_members = await client.get_chat_members_count(message.chat.id)
@@ -38,30 +42,29 @@ class GerenciarEventos:
                 chat_id=GROUP_MAIN,
                 text=welcome_text,
                 parse_mode=ParseMode.HTML,
-                disable_notification=True
-            ) 
-            if num_members > 10 :
-                    keyboard = [
-                    [
-                        InlineKeyboardButton('𝕯𝖔𝖒𝖎𝖓𝖆𝖙𝖎𝖔𝖓𝕾 𝔅�', url=GROUP_MAIN)
+                disable_notification=True            ) 
+                if num_members > 10 :
+                        keyboard = [
+                        [
+                            InlineKeyboardButton('𝕯𝖔𝖒𝖎𝖓𝖆𝖙𝖎𝖔𝖓𝕾 𝔅�', url=GROUP_MAIN)
+                        ]
                     ]
-                ]
-                    # text='Obrigado por me adicionar no grupo ;D'
-                    try:
-                       
+                        # text='Obrigado por me adicionar no grupo ;D'
                         try:
-                            await self.app.send_message(chat_id=message.from_user.id,text=f'Ei, obrigado por me adicionar no grupo {group_name}!\n',disable_notification=False,reply_markup= InlineKeyboardMarkup(keyboard))
+                        
+                            try:
+                                await self.app.send_message(chat_id=message.from_user.id,text=f'Ei, obrigado por me adicionar no grupo {group_name}!\n',disable_notification=False,reply_markup= InlineKeyboardMarkup(keyboard))
+                            except:
+                                pass
                         except:
-                            pass
-                    except:
-                        print('erro ao enviar mensagem')
+                            print('erro ao enviar mensagem')
 
-            else:
-                try:
-                    text = 'Grupo tem menos de 10 membros, estou saindo.'
-                    await client.send_message(message.chat.id, text=text)
-                    await client.leave_chat(message.chat.id)
-                    return
-                except:
-                    pass
-       
+                else:
+                    try:
+                        text = 'Grupo tem menos de 10 membros, estou saindo.'
+                        await client.send_message(message.chat.id, text=text)
+                        await client.leave_chat(message.chat.id)
+                        return
+                    except:
+                        pass
+        

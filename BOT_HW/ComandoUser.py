@@ -74,14 +74,17 @@ class ComandoDominar(ComandoUserConfigs):
             msg=await self._responder_mensagem(
                 message, "ɴᴏᴍᴇ ɪɴᴄᴏʀʀᴇᴛᴏ, ᴛᴇɴᴛᴇ ɴᴏᴠᴀᴍᴇɴᴛᴇ", client, deletar_apos=20
             )
-            asyncio.sleep(30)
+            await asyncio.sleep(30)
             await uteis.delete_messages(self.app,msg=msg,ids=msg.id)
             return
 
         if await self.coletar(message, info_personagem):
             caption = await self.create_txt_coletatrue(message, All_infos)
             #envia mensagem de confirmação 
-            await client.send_message(chat_id=message.chat.id, text=caption, parse_mode=self.ParseMode,reply_markup=InlineKeyboardMarkup([InlineKeyboardButton('🌐', switch_inline_query_current_chat=f'user.harem.{message.from_user.id}')]))
+            keyboard = InlineKeyboardMarkup([
+    [InlineKeyboardButton('🌐', switch_inline_query_current_chat=f'user.harem.{message.from_user.id}')]
+])
+            await client.send_message(chat_id=message.chat.id, text=caption, parse_mode=self.ParseMode,reply_markup=keyboard)
             txt = (
                 f"Usuário: @{message.from_user.username or 'Desconhecido'} | "
                 f"Comando: [{message.text or 'Nenhum'}] | "
