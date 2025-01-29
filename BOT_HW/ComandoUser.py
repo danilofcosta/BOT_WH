@@ -92,7 +92,16 @@ class ComandoDominar(ComandoUserConfigs):
                 f"(ID: {message.from_user.id}) acertou o personagem no grupo: "
                 f"{message.chat.title or 'Desconhecido'} | Grupo ID: {message.chat.id}"
             )
-            await CONTADOR.update_one({"group_id": message.chat.id}, {"$set": {f'Drop_{self.genero}_tk_chat': None}})
+            await CONTADOR.update_one(
+                {"group_id": message.chat.id},
+                {
+                    "$set": {
+                        f'Drop_{self.genero}_tk_chat': None,
+                        "count": 0
+                    }
+                }
+            )
+
             logging.info(txt)
     
     async def coletar(self, message, info_personagem: Dict[str, Any]) -> bool:
