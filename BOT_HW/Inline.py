@@ -44,7 +44,7 @@ class InlineConfig:
                     user=f'<a href=tg://user?id={iduser}>{user}</a>'
                 myharem_waifu = harems[0][self.genero+'_tk']['DOMINADOS']
                 dadosresult = await self.base_data.find({'_id': {'$in': myharem_waifu}}).skip(offset).limit(limite).to_list(length=limite)
-                switch_pm_text=f'{self.genero_txt}: {len(dadosresult)}'
+                switch_pm_text=f'{self.genero_txt}: {len(myharem_waifu)}'
                 
                 
                 
@@ -82,6 +82,7 @@ class InlineConfig:
             fileid = documento.get('file_id')
             url = documento.get('url')
 
+
             
             # Remover as aspas simples para chamar a função corretamente
             
@@ -118,7 +119,7 @@ class InlineConfig:
                         parse_mode=parsemode,title=f"{documento.get('nome')} - {documento.get('anime')}"
                     )
 
-                    objects.append(result)
+                objects.append(result)
             else:
                 print(f"Tipo de mídia inválido: {tipo}")
             
