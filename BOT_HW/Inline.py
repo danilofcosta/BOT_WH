@@ -71,6 +71,7 @@ class InlineConfig:
 
         if dadosresult: 
             results = await self.create_inline_results(dadosresult,user=user)
+            results.reverse()
             await self.wiews_resuts(inline_query,results,switch_pm_text=switch_pm_text,offset=offset,lim=limite)
         
 

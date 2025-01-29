@@ -75,7 +75,8 @@ class ComandoDominar(ComandoUserConfigs):
                 message, "ɴᴏᴍᴇ ɪɴᴄᴏʀʀᴇᴛᴏ, ᴛᴇɴᴛᴇ ɴᴏᴠᴀᴍᴇɴᴛᴇ", client, deletar_apos=20
             )
             await asyncio.sleep(30)
-            await uteis.delete_messages(self.app,msg=msg,ids=msg.id)
+            if msg:
+                await uteis.delete_messages(self.app,msg=msg,ids=msg.id)
             return
 
         if await self.coletar(message, info_personagem):
