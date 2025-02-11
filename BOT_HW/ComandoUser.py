@@ -24,9 +24,27 @@ class ComandoUserConfigs:
         self.ComandoGift = ComandoGift(self)
         self.trade=ComandoTrade(self)
         self.ComandoAnimeList=ComandoAnimeList(self)
+        ComandoMyinfo(self)
         # Adiciona o comando "dominar"
        
 
+class ComandoMyinfo():
+
+    def __init__(self, user_configs: ComandoUserConfigs):
+            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
+            self.genero = user_configs.genero
+            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
+            self.app = user_configs.app
+            self.base_data = user_configs.base_data
+            self.ParseMode = ParseMode.HTML
+            self._tk=user_configs._tk 
+            self.app.on_message(filters.command(["myinfo"]))(self.Initmyinfo)
+
+    async def Initmyinfo(self, client, message):
+            RankingTotal,posiçao_user=await ComandoTop.ranking_scan(message.from_user.id)
+
+            await message.reply(
+                 f"👤<b>{message.from_user.mention}</b> infos \n\n comando n finanlizado ")
 
 
 class ComandoDominar(ComandoUserConfigs):
@@ -83,8 +101,7 @@ class ComandoDominar(ComandoUserConfigs):
             caption = await self.create_txt_coletatrue(message, All_infos)
             #envia mensagem de confirmação 
             keyboard = InlineKeyboardMarkup([
-    [InlineKeyboardButton('🌐', switch_inline_query_current_chat=f'user.harem.{message.from_user.id}')]
-])
+    [InlineKeyboardButton('🌐', switch_inline_query_current_chat=f'user.harem.{message.from_user.id}')]])
             await client.send_message(chat_id=message.chat.id, text=caption, parse_mode=self.ParseMode,reply_markup=keyboard)
             txt = (
                 f"Usuário: @{message.from_user.username or 'Desconhecido'} | "
