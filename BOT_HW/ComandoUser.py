@@ -38,13 +38,33 @@ class ComandoMyinfo():
             self.base_data = user_configs.base_data
             self.ParseMode = ParseMode.HTML
             self._tk=user_configs._tk 
-            self.app.on_message(filters.command(["myinfo"]))(self.Initmyinfo)
+            self.app.on_message(filters.command([f"myinfo{self.genero[0]}"]))(self.Initmyinfo)
 
     async def Initmyinfo(self, client, message):
-            RankingTotal,posiçao_user=await ComandoTop.ranking_scan(message.from_user.id)
-
-            await message.reply(
-                 f"👤<b>{message.from_user.mention}</b> infos \n\n comando n finanlizado ")
+        harem = await HAREM.find({'_id':message.from_user.id}).to_list(length=None)
+        harem = harem[0] if len(harem) > 0 else None
+        
+        # Verifica se o harem existe e se está bloqueado ou não contém o gênero do bot
+        if harem is None:
+            return await self.app.send_message(chat_id=message.chat.id, text='𝔳𝔬𝔠𝔢̂ 𝔫𝔞̃𝔬 𝔱𝔢𝔪 𝔲𝔪 𝔥𝔞𝔯𝔢𝔪')
+        else:
+            RankingTotal,posiçao_user=await ComandoTop.ranking_scan(self,target_user_id=message.from_user.id)    
+            if self._tk in harem:
+                dominados=harem[self._tk]['DOMINADOS']
+            else:
+                return
+            TotalIndata=await self.base_data.count_documents({})
+            porcentagem_harem = (len(dominados) / TotalIndata * 100) if TotalIndata > 0 else 0
+            comprimento_preenchido = int(10 * porcentagem_harem // 100)
+            barra = '▰' * comprimento_preenchido + f'▱' * (10 - comprimento_preenchido)
+            await message.reply(text=(
+                 f"👤<b>{message.from_user.mention}</b> infos\n" 
+                 f"🏆Posição no ranking global: <code>{posiçao_user['posicao']}</code>\n"
+                 f"🏆Posição no ranking do grupo: <code>Indisponivel /top</code>\n"
+                 f"🆔: <code>{message.from_user.id}</code>\n"
+                 f"📊 Progresso : {barra} {porcentagem_harem:.2f}%\n"
+                 f"{self.genero_txt}:{dominados}"),
+                 quote=True,parse_mode=self.ParseMode)
 
 
 class ComandoDominar(ComandoUserConfigs):
