@@ -120,6 +120,6 @@ class BotWHConfigs(Settings):
                 await message.reply('Ocorreu um erro ao adicionar o novo perfil ao bot',quote=True)
 
         else:
-            await message.reply(f'use em RESPONDA a foto quer add ao perfil do bot',quote=True)
+            await message.reply(f'use em resposta a foto quer add ao perfil do bot',quote=True)
             
             
