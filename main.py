@@ -35,7 +35,7 @@ async def main(is_teste=False):
 
     elif is_teste:
         #cria uma instancia com o bot de teste  
-        TESTE = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='BOT_TESTE',genero='waifu',session_dir='SessionsTeste')
+        TESTE = BOT_WH_configs(bot_token=BOT_TESTE,NameSession='BOT_TESTE',genero='husbando',session_dir='SessionsTeste')
          
         try:
             await asyncio.gather(asyncio.create_task(TESTE.start_bot()))

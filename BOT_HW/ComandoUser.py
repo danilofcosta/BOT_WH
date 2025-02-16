@@ -16,67 +16,111 @@ class ComandoUserConfigs:
         self.app = app
         self.base_data = base_data
         self.ParseMode = ParseMode.HTML
-        self._tk = f'{self.genero}_tk'
+        self.genero_tk = f'{self.genero}_tk'
         #classs
-        self.comando_harem = ComandoDominar(self)
-        self.ComandoTop = ComandoTop(self)
-        self.ComandoFav = ComandoFav(self)
-        self.ComandoGift = ComandoGift(self)
-        self.trade=ComandoTrade(self)
-        self.ComandoAnimeList=ComandoAnimeList(self)
-        ComandoMyinfo(self)
-        # Adiciona o comando "dominar"
+    
+    async def _responder_mensagem(self,message, texto, client, deletar_apos: Optional[int] = None):
+        """
+        Fun o para responder a uma mensagem com um texto e deletar a mensagem ap s um tempo (opcional).
+        
+        Args:
+            message (Message): A mensagem a ser respondida.
+            texto (str): O texto a ser respondido.
+            client (Client): O cliente do bot.
+            deletar_apos (Optional[int], optional): O tempo em segundos para deletar a mensagem. Defaults to None.
+        """
+        if texto:
+            msg=await message.reply(
+                    text=texto,
+                    quote=True,
+                    parse_mode=self.ParseMode
+                )
+        else:
+            msg=message
+        if deletar_apos:
+            await asyncio.sleep(deletar_apos)
+            try:
+                await uteis.delete_messages(client, msg)
+            except Exception as e:
+                pass
+    def comandos(self): 
+        ComandoMyinfo(self.app, self.genero, self.base_data, Comandos=[f'myinfo{self.genero[0]}'])
+        ComandoDominar(self.app, self.genero, self.base_data, Comandos=['dominar'])
+        ComandoTop(self.app, self.genero, self.base_data, Comandos=[f'top{self.genero[0]}'])
+        ComandoFav(self.app, self.genero, self.base_data, Comandos=[f'fav{self.genero[0]}'])
+        ComandoGift(self.app, self.genero, self.base_data, Comandos=[f'gift{self.genero[0]}'])
+        ComandoTrade(self.app, self.genero, self.base_data, Comandos=[f'trade{self.genero[0]}'])
+        ComandoAnimeList(self.app, self.genero, self.base_data, Comandos=[f'animelist{self.genero[0]}'])
+
        
+      
+class ComandoMyinfo(ComandoUserConfigs):
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+        super().__init__(app, genero, base_data) 
+        if Comandos is None:
+            Comandos = []
 
-class ComandoMyinfo():
-
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self.ParseMode = ParseMode.HTML
-            self._tk=user_configs._tk 
-            self.app.on_message(filters.command([f"myinfo{self.genero[0]}"]))(self.Initmyinfo)
+        self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.'])
+        )(self.Initmyinfo)
+    
+    async def get_user_profile_photo(self, app, user_id):
+        async for photo in app.get_chat_photos(user_id):
+            return photo.file_id  # Retorna a primeira foto encontrada
+        return None  # Retorna None se não houver fotos
 
     async def Initmyinfo(self, client, message):
-        harem = await HAREM.find({'_id':message.from_user.id}).to_list(length=None)
-        harem = harem[0] if len(harem) > 0 else None
+        harem = await HAREM.find_one({'_id': message.from_user.id})
         
-        # Verifica se o harem existe e se está bloqueado ou não contém o gênero do bot
-        if harem is None:
-            return await self.app.send_message(chat_id=message.chat.id, text='𝔳𝔬𝔠𝔢̂ 𝔫𝔞̃𝔬 𝔱𝔢𝔪 𝔲𝔪 𝔥𝔞𝔯𝔢𝔪')
-        else:
-            RankingTotal,posiçao_user=await ComandoTop.ranking_scan(self,target_user_id=message.from_user.id)    
-            if self._tk in harem:
-                dominados=harem[self._tk]['DOMINADOS']
-            else:
-                return
-            TotalIndata=await self.base_data.count_documents({})
-            porcentagem_harem = (len(dominados) / TotalIndata * 100) if TotalIndata > 0 else 0
-            comprimento_preenchido = int(10 * porcentagem_harem // 100)
-            barra = '▰' * comprimento_preenchido + f'▱' * (10 - comprimento_preenchido)
-            await message.reply(text=(
-                 f"👤<b>{message.from_user.mention}</b> infos\n" 
-                 f"🏆Posição no ranking global: <code>{posiçao_user['posicao']}</code>\n"
-                 f"🏆Posição no ranking do grupo: <code>Indisponivel /top</code>\n"
-                 f"🆔: <code>{message.from_user.id}</code>\n"
-                 f"📊 Progresso : {barra} {porcentagem_harem:.2f}%\n"
-                 f"{self.genero_txt}:{dominados}"),
-                 quote=True,parse_mode=self.ParseMode)
 
+        
+        # Obtém a posição do usuário no ranking
+        RankingTotal, posicao_user = await ComandoTop.ranking_scan( self,target_user_id=message.from_user.id)
+        
+ 
+        dominados = 0 if not harem else harem.get(self.genero_tk, {}).get('DOMINADOS', []) if harem else 0 
+        total_dominados = len(dominados)
+        TotalIndata = await self.base_data.count_documents({})
+        
+        # Cálculo de porcentagem e barra de progresso
+        porcentagem_harem = (total_dominados / TotalIndata * 100) if TotalIndata > 0 else 0
+        barra_preenchida = int(10 * porcentagem_harem // 100)
+        barra = '▰' * barra_preenchida + '▱' * (10 - barra_preenchida)
+        
+        # Formata a legenda
+        caption = (
+            f"📜 <b>Suas Informações</b>\n\n"
+            f"👤 <b>{message.from_user.mention}</b>\n"
+            f"🏆 Posição no ranking global: <code>{'-'if not posicao_user else  posicao_user.get('posicao','-')}</code>\n"
+            f"🏆 Posição no ranking do grupo: <code>Indisponível (/top)</code>\n"
+            f"🆔 ID: <code>{message.from_user.id}</code>\n"
+            f"📊 Progresso: <a href=tg://user?id={message.from_user.id}>{barra}</a> {porcentagem_harem:.2f}%\n"
+            f"{self.genero_txt} Dominadas: <code> {total_dominados}/{TotalIndata}</code>\n"
+        )
+        
+        # Obtém a foto de perfil do usuário
+        photo_id = await self.get_user_profile_photo(client, message.from_user.id)
+        
+        if photo_id:
+            # Envia a foto com a legenda
+            msg=await client.send_photo(
+                chat_id=message.chat.id,
+                photo=photo_id,
+                caption=caption,
+                parse_mode=self.ParseMode
+            )
+        else:
+            # Caso o usuário não tenha foto, envia apenas a mensagem
+            msg=await message.reply(
+                text=caption,
+                quote=True,
+                parse_mode=self.ParseMode
+            )
+        await self._responder_mensagem(msg, None, client, deletar_apos=20)
 
 class ComandoDominar(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self.ParseMode = ParseMode.HTML
-            self._tk=user_configs._tk 
-            self.app.on_message(filters.command(["dominar"]))(self.InitDominar)
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos:list):
+        super().__init__(app, genero, base_data) 
+        self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.']))(self.InitDominar)
 
     async def InitDominar(self, client, message):
         if message.chat.type.value == "private":
@@ -152,11 +196,11 @@ class ComandoDominar(ComandoUserConfigs):
             await uteis.criar_harem(
                 id_user=id_user,
                 first_name=message.from_user.first_name,
-                Genero_bot=self._tk,
+                Genero_bot=self.genero_tk,
                 ID_domindo=ID_domindo
             )
-        elif not harem.get(self._tk.lower()):
-            harem[self._tk.lower()] = {
+        elif not harem.get(self.genero_tk.lower()):
+            harem[self.genero_tk.lower()] = {
                 "DOMINADOS": [ID_domindo],
                 "Harem": {"modo_harem": "padrao", "fav": ID_domindo}
             }
@@ -164,7 +208,7 @@ class ComandoDominar(ComandoUserConfigs):
         else:
             await HAREM.update_one(
                 {'_id': id_user},
-                {'$push': {f'{self._tk.lower()}.DOMINADOS': ID_domindo}}
+                {'$push': {f'{self.genero_tk.lower()}.DOMINADOS': ID_domindo}}
             )
         return True
 
@@ -195,30 +239,19 @@ class ComandoDominar(ComandoUserConfigs):
             f"⏳ ᴛᴇᴍᴘᴏ ɢᴀꜱᴛᴏ: <code>{str_tempo}</code>"
         )
 
-    async def _responder_mensagem(self, message, texto, client, deletar_apos: Optional[int] = None):
-        msg = await client.send_message(chat_id=message.chat.id, text=texto, parse_mode=self.ParseMode)
-        if deletar_apos:
-            await asyncio.sleep(deletar_apos)
-            await uteis.delete_messages(client, msg)
 
     def _validar_nome_personagem(self, nome_personagem: str, argumentos: List[str]) -> bool:
         nome_lower = nome_personagem.lower().split()
         return all(arg.lower() in nome_lower for arg in argumentos)
 
 class ComandoTop(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self._tk=user_configs._tk   
-            self.ParseMode = ParseMode.HTML
-            self.app.on_message(filters.command(commands=[f'{self.genero[0]}top','top'], case_sensitive=False, prefixes=['/', '!', '.']))(self.InitTop)
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+            super().__init__(app, genero, base_data) 
+            self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.']))(self.InitTop)
 
-            self.rk = TTLCache(maxsize=1000, ttl=300)
+            self.rk = TTLCache(maxsize=1000, ttl=50)
             self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("topchat_") or query.data.startswith("topglobaleu_") or query.data.startswith("topchateu_") or query.data.startswith("clear_msg")))(self.top_callback)
-   
+
     async def InitTop(self, client, message):
         if message.command[0] == f'top' and f'@' not in message.text.lower() and message.chat.type.value != "private":
             return print(message.command[0] )
@@ -253,7 +286,7 @@ class ComandoTop(ComandoUserConfigs):
             pipeline = [
                 {
                     "$match": {
-                        f"{self._tk}.DOMINADOS": {"$exists": True, "$ne": []}
+                        f"{self.genero_tk}.DOMINADOS": {"$exists": True, "$ne": []}
                     }
                 },
                 {
@@ -261,7 +294,7 @@ class ComandoTop(ComandoUserConfigs):
                         "_id": 1, "DATA_USER.NAME": 1,
 
                         "DATA_USER.ID": 1,  # Certifique-se de que o campo ID do usuário esteja disponível
-                        "tamanho_dominados": {"$size": f"${self._tk}.DOMINADOS"}
+                        "tamanho_dominados": {"$size": f"${self.genero_tk}.DOMINADOS"}
                     }
                 },
                 {"$sort": {"tamanho_dominados": DESCENDING}}
@@ -368,15 +401,9 @@ class ComandoTop(ComandoUserConfigs):
                 await query.answer("erro ao deletar mensagem")
 
 class ComandoFav(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self._tk=user_configs._tk   
-            self.ParseMode = ParseMode.HTML
-            self.app.on_message(filters.command(commands=[f'fav',f'{self.genero[0]}fav'], case_sensitive=False, prefixes=['/', '!', '.']))(self.InitFav)
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+            super().__init__(app, genero, base_data) 
+            self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.']))(self.InitFav)
 
             self.rk = TTLCache(maxsize=1000, ttl=300)
             self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("fav_") or query.data.startswith("unfav_")))(self.fav_callback)
@@ -424,7 +451,7 @@ class ComandoFav(ComandoUserConfigs):
                 # Atualizar o favorito no banco de dados
                 result = await HAREM.update_one(
                     {"_id": user},
-                    {"$set": {f"{self._tk}.Harem.fav": id}}
+                    {"$set": {f"{self.genero_tk}.Harem.fav": id}}
                 )
 
                 # Verificar se a atualização foi bem-sucedida
@@ -448,15 +475,9 @@ class ComandoFav(ComandoUserConfigs):
             await query.answer(f"Ocorreu um erro: {str(e)}", show_alert=True)
 
 class ComandoGift(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self._tk=user_configs._tk   
-            self.ParseMode = ParseMode.HTML
-            self.app.on_message(filters.command(commands=[f'gift',f'{self.genero[0]}gift'], case_sensitive=False, prefixes=['/', '!', '.']))(self.InitGift)
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+            super().__init__(app, genero, base_data) 
+            self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.']))(self.InitGift)
 
             self.rk = TTLCache(maxsize=1000, ttl=300)
             self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("gift_")or   query.data.startswith("ungift")))(self.gift_callback)
@@ -513,14 +534,14 @@ class ComandoGift(ComandoUserConfigs):
                     await uteis.criar_harem(
                         id_user=recebeu,
                         first_name=first_name,
-                        Genero_bot=self._tk,
+                        Genero_bot=self.genero_tk,
                         ID_domindo=id
                     )
 
                 else:
                     result = await HAREM.update_one(
                     {"_id": recebeu},
-                    {"$push": {f"{self._tk}.DOMINADOS": id}}
+                    {"$push": {f"{self.genero_tk}.DOMINADOS": id}}
                 )
                 # Verificar se a atualização foi bem-sucedida
                 #remover o id do harem do usuario que presenteou
@@ -528,11 +549,11 @@ class ComandoGift(ComandoUserConfigs):
                 harem = check_harem[0] if check_harem else None
               
                 if harem:
-                    lista_dominados = harem.get(f"{self._tk.lower()}", {}).get("DOMINADOS", [])
+                    lista_dominados = harem.get(f"{self.genero_tk.lower()}", {}).get("DOMINADOS", [])
                     lista_dominados.remove(id)
                     result =await HAREM.update_one(
                         {"_id": mandou},
-                        {"$set": {f"{self._tk.lower()}.DOMINADOS": lista_dominados}}
+                        {"$set": {f"{self.genero_tk.lower()}.DOMINADOS": lista_dominados}}
                     )
                 if result.modified_count > 0  :
                     await query.answer("Presenteado com sucesso")
@@ -569,16 +590,10 @@ class ComandoGift(ComandoUserConfigs):
             await query.answer("Erro ao processar os dados.", show_alert=True)       
 
 class ComandoTrade(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-            # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self._tk=user_configs._tk   
-            self.ParseMode = ParseMode.HTML
-            self.app.on_message(filters.command(commands=[f'trade',f'{self.genero[0]}trade'], case_sensitive=False, prefixes=['/', '!', '.']))(self.InitTrade)
-            self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("trade_") or  query.data.startswith("untrade")))(self.trade_callback)
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+        super().__init__(app, genero, base_data) 
+        self.app.on_message(filters.command(commands=Comandos, case_sensitive=False, prefixes=['/', '!', '.']))(self.InitTrade)
+        self.app.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("trade_") or  query.data.startswith("untrade")))(self.trade_callback)
     
     async def InitTrade(self,client,message):
         if message.command[0] == f'trade' and f'@' not in message.text.lower() and message.chat.type.value != "private":
@@ -655,7 +670,7 @@ class ComandoTrade(ComandoUserConfigs):
                 return await query.answer("Erro ao acessar os dados do usuário.", show_alert=True)
 
             # Atualizar lista de dominados de j2recebeu
-            lista_dominados_j2 = harem_j2.get(f"{self._tk.lower()}", {}).get("DOMINADOS", [])
+            lista_dominados_j2 = harem_j2.get(f"{self.genero_tk.lower()}", {}).get("DOMINADOS", [])
             if J2 not in lista_dominados_j2:
                 return await query.answer("Personagem não encontrado no harem.", show_alert=True)
 
@@ -663,7 +678,7 @@ class ComandoTrade(ComandoUserConfigs):
             lista_dominados_j2.append(J1)
             await HAREM.update_one(
                 {"_id": j2recebeu},
-                {"$set": {f"{self._tk.lower()}.DOMINADOS": lista_dominados_j2}}
+                {"$set": {f"{self.genero_tk.lower()}.DOMINADOS": lista_dominados_j2}}
             )
 
             # Buscar o harem de j1mandou
@@ -672,7 +687,7 @@ class ComandoTrade(ComandoUserConfigs):
                 return await query.answer("Erro ao acessar os dados do usuário.", show_alert=True)
 
             # Atualizar lista de dominados de j1mandou
-            lista_dominados_j1 = harem_j1.get(f"{self._tk.lower()}", {}).get("DOMINADOS", [])
+            lista_dominados_j1 = harem_j1.get(f"{self.genero_tk.lower()}", {}).get("DOMINADOS", [])
             if J1 not in lista_dominados_j1:
                 return await query.answer("Personagem não encontrado no harem.", show_alert=True)
 
@@ -680,7 +695,7 @@ class ComandoTrade(ComandoUserConfigs):
             lista_dominados_j1.append(J2)
             await HAREM.update_one(
                 {"_id": j1mandou},
-                {"$set": {f"{self._tk.lower()}.DOMINADOS": lista_dominados_j1}}
+                {"$set": {f"{self.genero_tk.lower()}.DOMINADOS": lista_dominados_j1}}
             )
 
             # Mensagem de sucesso
@@ -698,19 +713,14 @@ class ComandoTrade(ComandoUserConfigs):
             uteis.delete_messages(client, query.message)
 
 class ComandoAnimeList(ComandoUserConfigs):
-    def __init__(self, user_configs: ComandoUserConfigs):
-        self.genero = user_configs.genero
-        self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-        self.app = user_configs.app
-        self.base_data = user_configs.base_data
-        self._tk = user_configs._tk
-        self.ParseMode = ParseMode.HTML
+    def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
+        super().__init__(app, genero, base_data) 
         self.catalogo ={}
 
         # Registra o comando para a lista de animes
         self.app.on_message(
             filters.command(
-                commands=[f'{self.genero[0]}animeList', 'animeList'],
+                commands=Comandos,
                 case_sensitive=False,
                 prefixes=['/', '!', '.']
             )

@@ -20,7 +20,6 @@ class ComandoAdmin_DevConfigs:
         if message.from_user.username == DESENVOLVEDOR.replace('@',''):
             return True
                 # Obter informações do membro do grupo
-        if message.chat.type.value == "private": return False
         try:
             member = await self.app.get_chat_member(message.chat.id,  message.from_user.id)
         except errors.exceptions.bad_request_400.ChatAdminRequired:
@@ -36,16 +35,11 @@ class ComandoAdmin_DevConfigs:
 class Comando_check(ComandoAdmin_DevConfigs):
     def __init__(self, user_configs: ComandoAdmin_DevConfigs):
             # Recebe uma instância de ComandoUserConfigs para acessar os dados dela
-            self.genero = user_configs.genero
-            self.genero_txt = "ʜᴜꜱʙᴀɴᴅᴏ" if self.genero == "husbando" else "ᴡᴀɪꜰᴜ"
-            self.app = user_configs.app
-            self.base_data = user_configs.base_data
-            self.ParseMode = ParseMode.HTML
-            self._tk=user_configs._tk 
-            self.app.on_message(filters.command(["check"]))(self.Initcheck)
+            # super().__init__(user_configs.app, user_configs.genero, user_configs.base_data)
+            user_configs.app.on_message(filters.command(["check"]))(self.Initcheck)
 
     async def Initcheck(self, client, message):
-
+        
         # Verificar se o usuário é administrador
         if not await self.check_isadmin(client, message):
             return

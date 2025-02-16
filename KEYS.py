@@ -9,6 +9,7 @@ BOT_TESTE = os.getenv('BOT_TESTE')
 COLLECTION = os.getenv('COLLECTION')
 MONGODB_URI=  os.getenv("MONGODB_URI")
 GROUP_MAIN=os.getenv("GROUP_MAIN") 
+GROUP_MAIN_ID=os.getenv("GROUP_MAIN_ID") 
 DESENVOLVEDOR='@dog244'
 
 
