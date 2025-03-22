@@ -281,7 +281,7 @@ class ComandoTop(ComandoUserConfigs):
         user=[]
         async for membro in client.get_chat_members(message.chat.id):
             k[membro.user.id]=membro
-            user.append()
+            user.append(membro.user.id)
             
 
         all_user= await HAREM.find({"_id": {"$in": user}}).to_list(length=None)
