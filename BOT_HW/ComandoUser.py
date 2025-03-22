@@ -298,7 +298,7 @@ class ComandoTop(ComandoUserConfigs):
                                           
                                           }
                                   } )
-                print(i['_id'],k[i['_id']].user.first_name)
+                # print(i['_id'],k[i['_id']].user.first_name)
                 
     
         
