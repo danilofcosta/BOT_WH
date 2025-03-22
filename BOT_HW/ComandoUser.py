@@ -51,8 +51,7 @@ class ComandoUserConfigs:
         ComandoGift(self.app, self.genero, self.base_data, Comandos=[f'gift{self.genero[0]}'])
         ComandoTrade(self.app, self.genero, self.base_data, Comandos=[f'trade{self.genero[0]}'])
         ComandoAnimeList(self.app, self.genero, self.base_data, Comandos=[f'animelist{self.genero[0]}'])
-
-       
+   
       
 class ComandoMyinfo(ComandoUserConfigs):
     def __init__(self, app: Client, genero: str, base_data: Dict[str, Any], Comandos=None):
@@ -277,7 +276,32 @@ class ComandoTop(ComandoUserConfigs):
                 ]
             )
         message_id_to_react =await uteis.enviar_midia(self.app,idchat=message.chat.id,caption=cap,documento=random.choice(await self.base_data.find({}).to_list(length=None)),reply_markup=keyboard)
+        
+        k={}
+        user=[]
+        async for membro in client.get_chat_members(message.chat.id):
+            k[membro.user.id]=membro
+            user.append()
             
+
+        all_user= await HAREM.find({"_id": {"$in": user}}).to_list(length=None)
+
+        
+        
+ 
+
+        for i in all_user:
+            if i['_id'] in k:
+                await HAREM.update_one({'_id':i['_id']},
+                                 {'$set':{f"DATA_USER.NAME":f"{k[i['_id']].user.first_name}",
+                                          f"DATA_USER.User":f"{k[i['_id']].user.username}"                     
+                                          
+                                          }
+                                  } )
+                print(i['_id'],k[i['_id']].user.first_name)
+                
+    
+        
         
     async def ranking_scan(self,target_user_id):
             from pymongo import DESCENDING 
@@ -514,7 +538,7 @@ class ComandoGift(ComandoUserConfigs):
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            txt=f'Presentiar {message.reply_to_message.from_user.mention}?\n  <code>☛ {fav["nome"]}-{fav["anime"]}</code>\n'
+            txt=f'Presentiar {message.reply_to_message.from_user.mention}?\n  <code>☛ {fav["nome"]}-{fav["anime"]}\n ☛ ID: {fav['_id']}</code>'
             await uteis.enviar_midia(self.app,idchat=message.chat.id,documento=fav,caption=txt,reply_markup=reply_markup)
 
     async def gift_callback(self,client,query):
@@ -557,21 +581,22 @@ class ComandoGift(ComandoUserConfigs):
                     )
                 if result.modified_count > 0  :
                     await query.answer("Presenteado com sucesso")
+                    mention_user_recebeu=f''
                     await query.edit_message_caption(
-                        f"Presenteado com sucesso 🤖\n\n<I>/myharem{self.genero[0]}</I>",
+                        f'✅ <a href="tg://user?id={recebeu}">Presenteado com sucesso</a>  🤖\n\n<I>/myharem{self.genero[0]}</I>',
                         parse_mode=self.ParseMode
                     )
                     
                     try:
                         await self.app.send_message(
-                                                                    chat_id=recebeu,  # Certifique-se de que `recebeu` é do tipo correto
-                                                                    text=(
-                                                                        f"🎁 <b>Você recebeu um presente!</b> 🎉\n\n"
-                                                                        f"{query.from_user.mention} enviou algo incrível para você. 💝\n\n"
-                                                                        f"✨ <i>Confira agora e aproveite o presente com alegria!</i> 💌"
-                                                                    ),
-                                                                    parse_mode=ParseMode.HTML,
-                                                                    reply_markup=uteis.createBotao_busca_iniline(seach=str(id), txtbotao="🎁 Abrir Presente")
+                            chat_id=recebeu,  # Certifique-se de que `recebeu` é do tipo correto
+                            text=(
+                                f"🎁 <b>Você recebeu um presente!</b> 🎉\n\n"
+                                f"{query.from_user.mention} enviou algo incrível para você. 💝\n\n"
+                                f"✨ <i>Confira agora e aproveite o presente com alegria!</i> 💌"
+                            ),
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=uteis.createBotao_busca_iniline(seach=str(id), txtbotao="🎁 Abrir Presente")
                                                                 )
 
                     except Exception as e:
